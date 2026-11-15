@@ -1,4 +1,4 @@
-const V='artemis-v29-lock';
+const V='artemis-v30-lock';
 const SHELL=['./','index.html','manifest.json','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>Promise.all(SHELL.map(u=>fetch(new Request(u,{cache:'reload'})).then(r=>r.ok&&c.put(u,r)).catch(()=>{})))).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
@@ -16,6 +16,7 @@ self.addEventListener('fetch',e=>{
       const old=await c.match('index.html');
       if(old&&self.navigator&&self.navigator.onLine===false)return old;
       const net=fetch(new Request(r.url,{cache:'reload'})).then(res=>{if(res&&res.ok)c.put('index.html',res.clone());return res}).catch(()=>null);
+      e.waitUntil(net);
       const res=await Promise.race([net,wait(2500)]);
       if(res)return res;
       return old||(await net)||new Response('',{status:504});
